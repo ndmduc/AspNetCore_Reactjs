@@ -1,5 +1,7 @@
 ﻿import React from "react";
 import { Weather } from '../types/Weather';
+import { connect } from "react-redux";
+import { AppState } from "../store/configureStore";
 
 interface IProp {
     weather: Weather;
@@ -63,4 +65,11 @@ class WeatherDetails extends React.Component<IProp> {
     }
 }
 
-export default WeatherDetails
+//export default WeatherDetails
+
+//Redux
+const mapStateToProps = (state: AppState): IProp =>({
+    weather: state.weather
+});
+
+export default connect (mapStateToProps)(WeatherDetails)

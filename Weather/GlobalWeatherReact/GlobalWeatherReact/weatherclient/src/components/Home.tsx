@@ -6,13 +6,25 @@ import { Country } from '../types/Country';
 import { City } from '../types/City';
 import { Constants } from '../Constants';
 import { CurrentCondition } from '../types/CurrentCondition';
+import { CityMetaData } from '../types/CityMetaData';
+import { ThunkDispatch } from '../../node_modules/redux-thunk';
+import { AppActions } from '../types/actions';
+import { bindActionCreators } from '../../node_modules/redux';
+import { getCountries } from '../actions/actions';
+import { connect } from 'react-redux';
 
 interface IState {
     weather: Weather;
     countries: Country[];
     city?: City
 }
-class Home extends React.Component<IState>{
+
+interface IDispatchProps{
+    getCountries: () => void;
+}
+
+class Home extends React.Component<IDispatchProps, IState>{
+    
     public state: IState = {
         weather: { error: '' } as Weather,
         countries: [],
@@ -64,6 +76,7 @@ class Home extends React.Component<IState>{
         try {
             const city = await this.getCity(searchText, countryCode);
             if (city.Key) {
+                await this.updateLastAccessedCity(city);
                 await this.getCurrentConditions(city);
             }
         } catch (e) {
@@ -71,22 +84,68 @@ class Home extends React.Component<IState>{
         }
     }
 
+    //async getWeatherAsync(city: City) {
+    //    try {
+    //        const res = await fetch(`${Constants.currentConditionsAPIUrl}`)
+    //    } catch (e) {
+    //        console.log(e);
+    //    }
+
+    //    return {} as Weather;
+    //}
+
+    async updateLastAccessedCity(city: City) {
+        try {
+            const data = new CityMetaData(city);
+            await fetch(`${Constants.cityAPIUrl}`, {
+                method: 'post',
+                body: JSON.stringify(data),
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            });
+        } catch (e) {
+            console.log(e);
+        }
+    }
+
+    async getLastAccessedCity(): Promise<City> {
+        try {
+            const res = await fetch(`${Constants.cityAPIUrl}`);
+            const data = await res.json() as CityMetaData;
+            return {
+                Key: data.id,
+                EnglishName: data.name,
+                Type: 'City',
+                Country: {
+                    ID: data.countryId,
+                    EnglishName: ''
+                }
+            } as City;
+        } catch (e) {
+            console.log(e);
+            return {} as City;
+        }
+    }
+
     async componentDidMount() {
         try {
-            const countries = await this.getCountries();
-            await this.setStateAsync({ countries: countries } as IState);
-        } catch (error) {
+            // const countries = await this.getCountries();
+            // await this.setStateAsync({ countries: countries } as IState);
 
+            // const lastCity = await this.getLastAccessedCity();
+            // if (lastCity && lastCity.Key) {
+            //     await this.getCurrentConditions(lastCity);
+            // }
+
+            // Redux
+            this.props.getCountries();
+        } catch (error) {
+            console.log(error);
         }
     }
 
-    async componentWillUnmount() {
-        try {
-            console.log("com unmount")
-        } catch (error) {
-
-        }
-    }
+    
 
     async setStateAsync(state: IState) {
         return new Promise((resolve: any) => {
@@ -95,20 +154,43 @@ class Home extends React.Component<IState>{
         })
     }
 
+    // Use redux
     render() {
         return (
             <div className="container content panel">
                 <div className='container'>
                     <div className='row'>
                         <div className='form-container'>
-                            <WeatherDetails weather={this.state.weather} />
-                            <Form countries={this.state.countries} getWeather={this.getWeather} />
+                            <WeatherDetails  />
+                            <Form  />
                         </div>
                     </div>
                 </div>
             </div>
         );
     }
+
+    // render() {
+    //     return (
+    //         <div className="container content panel">
+    //             <div className='container'>
+    //                 <div className='row'>
+    //                     <div className='form-container'>
+    //                         <WeatherDetails weather={this.state.weather} />
+    //                         <Form countries={this.state.countries} getWeather={this.getWeather} />
+    //                     </div>
+    //                 </div>
+    //             </div>
+    //         </div>
+    //     );
+    // }
 }
 
-export default Home;
+//export default Home;
+
+// Use redux
+const mapDispatchToProps = (dispatch: ThunkDispatch<any, any, AppActions>): IDispatchProps => ({
+    getCountries: bindActionCreators(getCountries, dispatch)
+});
+
+export default connect(null, mapDispatchToProps)(Home);

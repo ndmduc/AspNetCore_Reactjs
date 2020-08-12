@@ -3,13 +3,18 @@ import { Button, FormControl } from 'react-bootstrap';
 import { AsyncTypeahead, Typeahead } from 'react-bootstrap-typeahead';
 import { Country } from '../types/Country';
 import { City } from '../types/City';
-import { type } from 'os';
+import { ThunkDispatch } from '../../node_modules/redux-thunk';
+import { AppActions } from '../types/actions';
+import { bindActionCreators } from '../../node_modules/redux';
+import { getWeather } from '../actions/actions';
+import { connect } from "react-redux";
+import { AppState } from "../store/configureStore";
 
-interface IProps {
-    getWeather: (e: any, country: string, searchText: string) => Promise<void>;
+// interface IProps {
+//     getWeather: (e: any, country: string, searchText: string) => Promise<void>;
 
-    countries: Country[];
-}
+//     countries: Country[];
+// }
 
 interface IState {
     city: City;
@@ -17,6 +22,15 @@ interface IState {
     cities: City[];
     searchText: string;
 }
+
+// Redux
+interface IFormProps{
+    countries: Country[];
+}
+interface IDispatchProps{
+    getWeather: (country: string, city: string) => void;
+}
+interface IProps extends IFormProps, IDispatchProps {}
 
 class Form extends React.Component<IProps, IState> {
     constructor(props: IProps) {
@@ -31,7 +45,11 @@ class Form extends React.Component<IProps, IState> {
 
     handleSubmit = async (e: any) => {
         e.preventDefault(); // Prevent auto reload page when form submit
-        this.props.getWeather(e, this.state.country.ID, this.state.searchText);
+        //this.props.getWeather(e, this.state.country.ID, this.state.searchText);
+
+        //Redux
+        if(this.state.searchText && this.state.country)
+            this.props.getWeather(this.state.country.ID, this.state.searchText);
     }
 
     // Fix issue IProps
@@ -68,4 +86,15 @@ class Form extends React.Component<IProps, IState> {
     }
 }
 
-export default Form;
+//export default Form;
+
+// Redux
+const mapStateToProps = (state: AppState) : IFormProps => ({
+    countries: state.countries
+});
+
+const mapDispatchToProps = (dispatch: ThunkDispatch<any, any, AppActions>): IDispatchProps => ({
+    getWeather: bindActionCreators(getWeather, dispatch)
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(Form)
