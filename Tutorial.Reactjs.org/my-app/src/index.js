@@ -188,11 +188,199 @@ class Page extends React.Component{
     )
   }
 }
+
+//// Lists and Keys
+const numbers = [1,2,3,4,5];
+const listItems = numbers.map((n) => 
+  <li>{n}</li>
+);
+
+function NumberList(props){
+  const numbers1 = props.numbers;
+  const listItems = numbers1.map((n) => 
+    <li key={n.toString()}>{n}</li>
+  );
+  return (
+    <ul>{listItems}</ul>
+  )
+}
+//Key
+function Blog(props){
+  const sidebar = (
+    <ul>
+      {props.posts.map((post) => 
+        <li key={post.id}>
+          {post.title}
+        </li>
+      )}
+    </ul>
+  );
+
+  const content = props.posts.map((post) => 
+    <div key={post.id}>
+      <h3>{post.title}</h3>
+      <p>{post.content}</p>
+    </div>
+  );
+
+  return (
+    <div>
+      {sidebar}
+      <hr/>
+      {content}
+    </div>
+  );
+}
+const posts = [
+  {id: 1, title: 'Hello World', content: 'Welcome to learning React!'},
+  {id: 2, title: 'Installation', content: 'You can install React from npm.'}
+];
+
+
+//// Forms
+class NameForm extends React.Component{
+  constructor(props){
+    super(props);
+    this.state = {value: ''};
+  }
+
+  handleChange = (event) => {
+    this.setState({value: event.target.value});
+  }
+
+  handleSubmit = (event) => {
+    alert('A name was submitted: ' + this.state.value);
+    event.preventDefault();
+  }
+
+  render(){
+    return (
+      <form onSubmit={this.handleSubmit}>
+        <label>
+          Name:
+          <input type='text' value={this.state.value} onChange={this.handleChange} />
+        </label>
+
+        <input type='submit' value='Submit' />
+      </form>
+    );
+  }
+}
+
+class EssayForm extends React.Component{
+  constructor(props){
+    super(props);
+    this.state = { value: 'Please write an essay about your favorite DOM element.'};
+  }
+
+  handleChange = (event) => {
+    this.setState({value: event.target.value});
+  }
+
+  handleSubmit = (event) => {
+    alert('An essay was submitted: ' + this.state.value);
+    event.preventDefault();
+  }
+
+  render(){
+    return(
+      <form onSubmit={this.handleSubmit}>
+        <label>
+          Essay:
+          <textarea value={this.state.value} onChange={this.handleChange} />
+        </label>
+        <input type='submit' value='Submit' />
+      </form>
+    )
+  }
+}
+
+class FlavorForm extends React.Component{
+  constructor(props){
+    super(props);
+    this.state = {value: 'coconut'};
+  }
+
+  handleChange = (event) => {
+    this.setState({value: event.target.value});
+  }
+
+  handleSubmit = (event) => {
+    alert('An essay was submitted: ' + this.state.value);
+    event.preventDefault();
+  }
+
+  render(){
+    return(
+      <form onSubmit={this.handleSubmit}>
+        <label>
+          Pick your favorite flavor:
+          <select value={this.state.value} onChange={this.handleChange} >
+            <option value="grapefruit">Grapefruit</option>
+            <option value="lime">Lime</option>
+            <option value="coconut">Coconut</option>
+            <option value="mango">Mango</option>
+          </select>
+        </label>
+        <input type='submit' value='Submit' />
+      </form>
+    )
+  }
+}
+
+class Reservation extends React.Component{
+  constructor(props){
+    super(props);
+    this.state = { isGoing: true, numberOfGuests: 2 };
+  }
+
+  handleInputChange = (event) => {
+    const target = event.target;
+    const value = target.name === 'isGoing' ? target.checked : target.value;
+    const name = target.name;
+
+    this.setState({
+      [name]: value
+    });
+  }
+
+  render(){
+    return(
+      <form>
+        <label>
+          Is going:
+          <input
+            name='isGoing'
+            type='checkbox'
+            checked={this.state.isGoing}
+            onChange={this.handleInputChange} />
+        </label>
+        <br />
+        <label>
+          numberOfGuests:
+          <input
+            name='numberOfGuests'
+            type='number'
+            checked={this.state.numberOfGuests}
+            onChange={this.handleInputChange} />
+        </label>
+      </form>
+    )
+  }
+}
+
 ReactDOM.render(
   //<Clock />,
   //<Toggle />
   // <LoginControl />
-  <Page />
+  // <Page />
+  // <ul>{listItems}</ul>
+  // <NumberList numbers={numbers} />
+  // <Blog posts={posts} />
+  // <NameForm />
+  // <EssayForm />
+  // <FlavorForm />
+  <Reservation />
   , document.getElementById('root'));
 
 
