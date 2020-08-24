@@ -4,6 +4,7 @@ import './index.css';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
 
+
 // ReactDOM.render(
 //   <React.StrictMode>
 //     <App />
@@ -461,6 +462,222 @@ class Calculator extends React.Component{
   
 }
 
+//// Composition vs Inheritance
+function FancyBorder(props){
+  return (
+    <div className={'FancyBorder FancyBorder-' + props.color}>
+      {props.children}
+    </div>
+  )
+}
+function WelcomeDialog(){
+  return(
+    <FancyBorder color='blue'>
+      <h1 className='Dialog-title'>
+        Welcome
+      </h1>
+      <p className='Dialog-message'>
+        Thank you for visiting our spacecraft!
+      </p>
+    </FancyBorder>
+  )
+}
+
+function SplitPane(props){
+  return(
+    <div className='SplitPane'>
+      <div className='SplitPane-left'>
+        {props.left}
+      </div>
+      <div className='SplitPane-right'>
+        {props.right}
+      </div>
+    </div>
+  )
+}
+function Contacts() {
+  return <div className="Contacts" />;
+}
+
+function Chat() {
+  return <div className="Chat" />;
+}
+function App1(){
+  return(
+    <SplitPane left={<Contacts />}
+      right={<Chat />}>
+    </SplitPane>
+  )
+}
+
+function Dialog(props) {
+  return (
+    <FancyBorder color="blue">
+      <h1 className="Dialog-title">
+        {props.title}
+      </h1>
+      <p className="Dialog-message">
+        {props.message}
+      </p>
+      {props.children}
+    </FancyBorder>
+  );
+}
+
+class SignUpDialog extends React.Component{
+  constructor(props){
+    super(props);
+    this.state = {login:''};
+  }
+
+  handleChange = (e) => {
+    this.setState({login: e.target.value});
+  }
+
+  handleSignUp = () => {
+    alert(`Welcome aboard, ${this.state.login}`);
+  }
+
+  render(){
+    return(
+      <Dialog title="Mars Exploration Program"
+              message="How should we refer to you?">
+        <input value={this.state.login}
+               onChange={this.handleChange} />
+        <button onClick={this.handleSignUp}>
+          Sign Me Up!
+        </button>
+      </Dialog>
+    )
+  }
+}
+
+//// Thinking in React
+class ProductCategoryRow extends React.Component{
+  render(){
+    const category = this.props.category;
+    return(
+      <tr>
+        <th colSpan='2'>
+          {category}
+        </th>
+      </tr>
+    );
+  }
+}
+
+class ProductRow extends React.Component{
+  render(){
+    const product = this.props.product;
+    const name = product.stocked ? 
+      product.name :
+      <span style={{color: 'red'}}>
+        {product.name}
+      </span>;
+
+    return(
+      <tr>
+        <td>{name}</td>
+        <td>{product.price}</td>
+      </tr>
+    );
+  }
+}
+
+class ProductTable extends React.Component{
+  render(){
+    const filterText = this.props.filterText;
+    const isStockOnly = this.props.isStockOnly;
+
+    const rows =[];
+    let lastCategory = null;
+
+    this.props.products.forEach((product) => {
+      if(product.name.indexOf(filterText) === -1){
+        return;
+      }
+      if(isStockOnly && !product.stocked){
+        return;
+      }
+
+      if(product.category !== lastCategory){
+        rows.push(
+          <ProductCategoryRow
+            category={product.category}
+            key={product.category} />
+        );
+      }
+
+      rows.push(
+        <ProductRow 
+          product={product}
+          key={product.name} />
+      );
+
+      lastCategory = product.category;
+    });
+
+    return(
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Price</th>
+          </tr>
+        </thead>
+        <tbody>{rows}</tbody>
+      </table>
+    );
+  }
+}
+
+class SearchBar extends React.Component{
+  render(){
+    const filterText = this.props.filterText;
+    const isStockOnly = this.props.isStockOnly;
+
+    return(
+      <form>
+        <input type='text' placeholder='Search ...' value={filterText} />
+        <p>
+          <input type='checkbox' checked={isStockOnly} />
+          {' '}
+          Only show products in stock
+        </p>
+      </form>
+    );
+  }
+}
+
+class FilterableProductTable extends React.Component{
+  constructor(props){
+    super(props);
+    this.state = {filterText:'ball', isStockOnly: false};
+  }
+
+  render(){
+    return (
+      <div>
+        <SearchBar 
+          filterText={this.state.filterText}
+          isStockOnly={this.state.isStockOnly} />
+        <ProductTable products={this.props.products} 
+          filterText={this.state.filterText}
+          isStockOnly={this.state.isStockOnly}
+          />
+      </div>
+    );
+  }
+}
+
+const PRODUCTS = [
+  {category: 'Sporting Goods', price: '$49.99', stocked: true, name: 'Football'},
+  {category: 'Sporting Goods', price: '$9.99', stocked: true, name: 'Baseball'},
+  {category: 'Sporting Goods', price: '$29.99', stocked: false, name: 'Basketball'},
+  {category: 'Electronics', price: '$99.99', stocked: true, name: 'iPod Touch'},
+  {category: 'Electronics', price: '$399.99', stocked: false, name: 'iPhone 5'},
+  {category: 'Electronics', price: '$199.99', stocked: true, name: 'Nexus 7'}
+];
 
 ReactDOM.render(
   //<Clock />,
@@ -474,7 +691,11 @@ ReactDOM.render(
   // <EssayForm />
   // <FlavorForm />
   // <Reservation />
-  <Calculator />
+  // <Calculator />
+  // <WelcomeDialog />
+  // <App1 />
+  // <SignUpDialog />
+  <FilterableProductTable products={PRODUCTS} />
   , document.getElementById('root'));
 
 
